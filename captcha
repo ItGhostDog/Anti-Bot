@@ -1,0 +1,56 @@
+options:
+	staff: "owner" or "admin" or "developer" or "builder" or "helper" or "jr.mod" or "mod" or "sr.mod" or "headbuilder"
+	donor: "VIP" or "VIP+" or "MVP" or "MVP+" or "MEGA" or "EPIC" or "LEGEND" or "ETERNAL"
+on server list ping:
+	hide {notverified::*} from the server list
+on join:
+	if player's group is {@staff}:
+		send "&2&lCaptcha &8>> &6You have bypassed the captcha!"
+		set {verify.%player's uuid%} to true
+		broadcast "&b&lSTAFFMEMBER &f%player% &7joined!"
+	if player's group is {@donor}:
+		send "&2&lCaptcha &8>> &6You have bypassed the captcha!"
+		set {verify.%player's uuid%} to true
+		broadcast "&7[&a&l+&7] &f%player%"
+	if player's group is not {@donor} or {@staff}:
+		hide player from all players
+		add player to {notverified::*}
+		set {_1} to a random integer between 0 and  9
+		set {_2} to a random integer between 0 and  9
+		set {_3} to a random integer between 0 and  9
+		set {_4} to a random integer between 0 and  9
+		set {_5} to a random integer between 0 and  9
+		set {_6} to a random integer between 0 and  9
+		set {captcha.%player's uuid%} to "%{_1}%%{_2}%%{_3}%%{_4}%%{_5}%%{_6}%"
+		wait 1 tick
+		send player title "&6%{captcha.%player's uuid%}%" with subtitle "&eType number in chat to verify!" for 10 seconds
+		wait 10 seconds
+		if {verify.%player's uuid%} is not true:
+			send player title "&6%{captcha.%player's uuid%}%" with subtitle "&eType number in chat to verify!" for 10 seconds
+		wait 10 seconds
+		if {verify.%player's uuid%} is not true:
+			kick the player due to "Failed Captcha!"
+on chat:
+	if message is {captcha.%player's uuid%}:
+		if {verify.%player's uuid%} is not true:
+			send "&2&lCaptcha &8>> &2You Passed Captcha!"
+			broadcast "&7[&a&l+&7] &f%player%"
+			set {verify.%player's uuid%} to true
+			reveal player from all players
+			remove player from {notverified::*}
+			cancel event
+	else:
+		if {verify.%player's uuid%} is not true:
+			send "&2&lCaptcha &8>> &cTry Again!"
+			cancel event
+on disconnect:
+	if {verify.%player's uuid%} is true:
+		if player's group is {@staff}:
+			broadcast "&b&lSTAFFMEMBER &f%player% &7left!"
+			set {verify.%player's uuid%} to false
+		else:
+			broadcast "&7[&c&l-&7] &f%player%"
+			set {verify.%player's uuid%} to false
+on any movement:
+    if {verify.%player's uuid%} is not true:
+        cancel event
